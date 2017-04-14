@@ -1,0 +1,3 @@
+Double-click on Biome list to add to include list
+Double-click on Include/Exclude to remove from list
+Search for multiple matching seeds and save to text file
