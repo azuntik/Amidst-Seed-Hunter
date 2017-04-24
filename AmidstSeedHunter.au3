@@ -416,7 +416,7 @@ EndFunc
 
 #Region Search Functions
 Func StopExecution()
-	DebugWrite("Execution terminated early")
+	DebugWrite("Terminate loop signal received. Finishing current loop and exiting")
 EndFunc
 
 Func GetAmidstWindowDimensions($windowTitle)
@@ -512,8 +512,8 @@ Func EvaluateSeed($seed, $criteriaArray, $listArray, $windowDims, $include)
 EndFunc
 
 Func DoSearch()
-	Dim $numIncluded, $numExcluded
-	Dim $searchColor, $index, $currentSeed, $handle, $reason
+	Dim $numIncluded, $numExcluded, $timer, $time, $hours, $minutes, $seconds
+	Dim $searchColor, $index, $currentSeed, $handle, $reason, $numSeedsInFile
 	Dim $includedBiomesSearchArray = []
 	Dim $excludedBiomesSearchArray = []
 	Dim $includedStructsSearchArray = []
@@ -525,13 +525,20 @@ Func DoSearch()
 	
 	$newSearch = True
 	
-	If $showResultsTab = 1 Then
+	If $showResultsTab = 1 And $enableDebugging = 0 Then
 		DoHideBiomesTab()
 		DoHideStructuresTab()
 		DoHideOptionsTab()
 		DoHideDebugTab()
 		DoShowResultsTab()
 		_GUICtrlTab_SetCurFocus($tabSet, _GUICtrlTab_FindTab($tabSet, "Search Results"))
+	ElseIf $enableDebugging = 1 Then
+		DoHideBiomesTab()
+		DoHideStructuresTab()
+		DoHideOptionsTab()
+		DoHideResultsTab()
+		DoShowDebugTab()
+		_GUICtrlTab_SetCurFocus($tabSet, _GUICtrlTab_FindTab($tabSet, "Debug"))
 	EndIf
 	
 	ResultsWrite("Seed search initiated " & GetTimestamp() & @CRLF)
@@ -540,98 +547,115 @@ Func DoSearch()
 		ResultsWrite("Seed source: File")
 		ResultsWrite("Seed list file: " & $seedListFile)
 		ResultsWrite($seedFileInfo)
-		ResultsWrite("Seed offset: " & String($seedOffset) & @CRLF)
-		DebugWrite("Seed list file: " & $seedListFile)
+		ResultsWrite("Seed offset: " & String($seedOffset))
+		$numSeedsInFile = _FileCountLines($seedListFile)
+		If $seedOffset >= $numSeedsInFile Then
+			ResultsWrite("Seed offset is greater than number of seeds in file. Offset will be reset to 0.")
+			$seedOffset = 0
+		EndIf
+		DebugWrite(@CRLF & "Seed list file: " & $seedListFile)
 	Else
 		ResultsWrite("Seed source: Random" & @CRLF)
 	EndIf
 	
 	ResultsWrite("Max. seeds to evaluate: " & ($maxSeedsToEvaluate = 0 ? "∞" : String($maxSeedsToEvaluate)))
-	ResultsWrite("Number of seeds to find: " & String($seedsToFind) & @CRLF)
+	ResultsWrite("Number of seeds to find: " & ($seedsToFind = 0 ? "∞" : String($seedsToFind)))
+	
+	If $maxSeedsToEvaluate = 0 And $useRandomSeeds = 0 And $seedsToFind > 0 Then
+		ResultsWrite(@CRLF & "Search will continue until " & $seedsToFind & " seed" & ($seedsToFind = 1 ? " is " : "s are ") & "found or all seeds are exhausted.")
+	ElseIf $maxSeedsToEvaluate = 0 And $useRandomSeeds = 0 And $seedsToFind = 0 Then
+		ResultsWrite(@CRLF & "Search will continue until all seeds matching the criteria above are found in the seed list file (" & StringRegExpReplace(String($numSeedsInFile), '(\A\d{1,3}(?=(\d{3})+\z)|\d{3}(?=\d))', '\1,') & ($numSeedsInFile = 1 ? " seed" : " seeds") & "). Press ESC to terminate early.")
+	ElseIf $maxSeedsToEvaluate = 0 And $useRandomSeeds = 1 And $seedsToFind = 0 Then
+		ResultsWrite(@CRLF & "Search will continue until terminated by the user. Press ESC to terminate.")
+	ElseIf $maxSeedsToEvaluate = 0 And $useRandomSeeds = 1 And $seedsToFind > 0 Then
+		ResultsWrite(@CRLF & "Search will continue until " & $seedsToFind & " seed" & ($seedsToFind = 1 ? " is " : "s are ") & "found. Press ESC to terminate early.")
+	ElseIf $maxSeedsToEvaluate > 0 And $useRandomSeeds = 0 And $seedsToFind = 0 Then
+		ResultsWrite(@CRLF & StringRegExpReplace(String($maxSeedsToEvaluate), '(\A\d{1,3}(?=(\d{3})+\z)|\d{3}(?=\d))', '\1,') & ($numSeedsInFile = 1 ? " seed" : " seeds") & " will be evaluated and any seeds matching your criteria will be listed.")
+	ElseIf $maxSeedsToEvaluate > 0 And $useRandomSeeds = 1 And $seedsToFind = 0 Then
+		ResultsWrite(@CRLF & "Search will continue until " & $maxSeedsToEvaluate & " seed" & ($seedsToFind = 1 ? " is " : "s are ") & "evaluated. Press ESC to terminate early.")
+	EndIf
 
 	If $includeRejectedSeeds = 1 Then
-		ResultsWrite("Rejected seeds are included in results below" & @CRLF)
+		ResultsWrite(@CRLF & "Rejected seeds are included in results below.")
 		DebugWrite("Including rejected seeds")
 	EndIf
 	
-	ResultsWrite("Biome search criteria:")
+	ResultsWrite(@CRLF & "Search Criteria:" & @CRLF & "====================")
 	DebugWrite("Getting biome criteria")
 	If $searchForBiomes = 1 Then
 		$numIncluded = _GUICtrlListBox_GetListBoxInfo($includedBiomeList)
 		$numExcluded = _GUICtrlListBox_GetListBoxInfo($excludedBiomeList)
 		DoSelectAllListItems($includedBiomeList)
 		$includedBiomesSearchArray = _GUICtrlListBox_GetSelItemsText($includedBiomeList)
-		ResultsWrite("  Include:")
+		ResultsWrite("Included Biomes:")
 		DebugWrite("Included biomes")
 		If UBound($includedBiomesSearchArray) = 1 Then
-			ResultsWrite("   - None")
+			ResultsWrite("- None")
 			DebugWrite("None")
 		Else
 			For $i = 1 To UBound($includedBiomesSearchArray) - 1
-				ResultsWrite("   - " & $includedBiomesSearchArray[$i])
+				ResultsWrite("- " & $includedBiomesSearchArray[$i])
 				DebugWrite($includedBiomesSearchArray[$i])
 			Next
 		EndIf
 		DoSelectAllListItems($excludedBiomeList)
 		$excludedBiomesSearchArray = _GUICtrlListBox_GetSelItemsText($excludedBiomeList)
-		ResultsWrite("  Exclude:")
+		ResultsWrite("Excluded Biomes:")
 		DebugWrite("Excluded biomes")
 		If UBound($excludedBiomesSearchArray) = 1 Then
-			ResultsWrite("   - None")
+			ResultsWrite("- None")
 			DebugWrite("None")
 		Else
 			For $i = 1 To UBound($excludedBiomesSearchArray) - 1
-				ResultsWrite("   - " & $excludedBiomesSearchArray[$i])
+				ResultsWrite("- " & $excludedBiomesSearchArray[$i])
 				DebugWrite($excludedBiomesSearchArray[$i])
 			Next
 		EndIf
 	Else
-		ResultsWrite("  None selected")
 		DebugWrite("No biomes selected")
 	EndIf
-	
-	ResultsWrite("Structure search criteria:")
+
 	DebugWrite("Getting structure criteria")
 	If $searchForStructures = 1 Then
 		$numIncluded = _GUICtrlListBox_GetListBoxInfo($includedStructList)
 		$numExcluded = _GUICtrlListBox_GetListBoxInfo($excludedStructList)
 		DoSelectAllListItems($includedStructList)
 		$includedStructsSearchArray = _GUICtrlListBox_GetSelItemsText($includedStructList)
-		ResultsWrite("  Include:")
+		ResultsWrite("Included Structures:")
 		DebugWrite("Included structures")
 		If UBound($includedStructsSearchArray) = 1 Then
-			ResultsWrite("   - None")
+			ResultsWrite("- None")
 			DebugWrite("None")
 		Else
 			For $i = 1 To UBound($includedStructsSearchArray) - 1
-				ResultsWrite("   - " & $includedStructsSearchArray[$i])
+				ResultsWrite("- " & $includedStructsSearchArray[$i])
 				DebugWrite($includedStructsSearchArray[$i])
 			Next
 		EndIf
 		DoSelectAllListItems($excludedStructList)
 		$excludedStructsSearchArray = _GUICtrlListBox_GetSelItemsText($excludedStructList)
-		ResultsWrite("  Exclude:")
+		ResultsWrite("Excluded Structures:")
 		DebugWrite("Excluded structures")
 		If UBound($excludedStructsSearchArray) = 1 Then
-			ResultsWrite("   - None")
+			ResultsWrite("- None")
 			DebugWrite("None")
 		Else
 			For $i = 1 To UBound($excludedStructsSearchArray) - 1
-				ResultsWrite("   - " & $excludedStructsSearchArray[$i])
+				ResultsWrite("- " & $excludedStructsSearchArray[$i])
 				DebugWrite($excludedStructsSearchArray[$i])
 			Next
 		EndIf
 	Else
-		ResultsWrite("  None selected")
 		DebugWrite("No structures selected")
 	EndIf
 	
 	; False positives warning
 	If $searchForBiomes = 1 And $searchForStructures = 1 And (_ArraySearch($includedBiomesSearchArray, "Extreme Hills") Or _ArraySearch($includedBiomesSearchArray, "Extreme Hills M") Or _ArraySearch($includedBiomesSearchArray, "Ice Mountains") Or _ArraySearch($includedBiomesSearchArray, "Ice Plains") Or _ArraySearch($excludedBiomesSearchArray, "Extreme Hills") Or _ArraySearch($excludedBiomesSearchArray, "Extreme Hills M") Or _ArraySearch($excludedBiomesSearchArray, "Ice Mountains") Or _ArraySearch($excludedBiomesSearchArray, "Ice Plains")) Then
 		_WinAPI_MessageBoxCheck(BitOR($MB_OK, $MB_ICONQUESTION), "Possible False Positives/Negatives", "Warning: Searching for certain biomes (Extreme Hills, Extreme Hills M, Ice Mountains, Ice Plains) can generate false positives/negatives when also searching for structures." & @CRLF & @CRLF & "When searching for these biomes (included or excluded), we recommend double-checking any results to eliminate these possible false results", "{3AC815B9-2394-4E3C-92CA-E51BCBDEDE16}", $IDOK)
+		ResultsWrite(@CRLF & "WARNING: There is a (small) possibility of false positives/negatives in these search results. Manual evaluation is recommended.")
 	EndIf
 	
-	MsgBox($MB_OK + $MB_ICONINFORMATION, "Beginning Search", "Depending on your search criteria, this process can take a long time." & @CRLF & @CRLF & "To end execution early, press ESC.")
+	_WinAPI_MessageBoxCheck(BitOR($MB_OK, $MB_ICONINFORMATION), "Beginning Search", "Depending on your search criteria, this process can take a long time." & @CRLF & @CRLF & "To end execution early, press ESC.", "{2D6A1CA1-EE2B-4AD2-9FB8-60052F49C56B}", $IDOK)
 	
 	If $showProgressPopupWindow = 1 Then
 		_Toast_Set(Default)
@@ -655,16 +679,25 @@ Func DoSearch()
 		GUICtrlSetData($progressLabel2, $seedsFoundCount & "/" & $seedsToFind & " seeds found")
 		GUICtrlSetData($progressBar2, ($seedsFoundCount / $seedsToFind) * 100)
 	EndIf
-	
+		
 	ResultsWrite(@CRLF & "Search Results:" & @CRLF & "====================")
-	
+
+	$timer = TimerInit()
+
 	; Search loop
 	While 1
 		If @HotKeyPressed = "{ESC}" Then ExitLoop
 		
-		If $searchCount >= $maxSeedsToEvaluate And $maxSeedsToEvaluate > 0 Then ExitLoop
+		; If seedsToFind is 0, keep searching until you run out of seeds
+		If $seedsFoundCount >= $seedsToFind And $seedsToFind > 0 Then ExitLoop
+		If $seedsToFind = 0 Then 
+			If $maxSeedsToEvaluate = 0 Or ($maxSeedsToEvaluate - $seedOffset) > $numSeedsInFile Then
+				$maxSeedsToEvaluate = $numSeedsInFile - $seedOffset
+			EndIf
+		EndIf
 		
-		If $seedsFoundCount >= $seedsToFind Then ExitLoop
+		; If maxSeeds is 0, keep searching until you find all the seeds requested
+		If $searchCount >= $maxSeedsToEvaluate And $maxSeedsToEvaluate > 0 Then ExitLoop
 		
 		WinActivate("Amidst v4.2")
 		If $useRandomSeeds = 1 Then
@@ -710,7 +743,9 @@ Func DoSearch()
 			EndIf
 			$seedsFoundCount += 1
 		Else
-			ResultsWrite($currentSeed & _StringRepeat(" ", 24 - StringLen(String($currentSeed))) & $reason)
+			If $includeRejectedSeeds = 1 Then
+				ResultsWrite("Rejected: " & $currentSeed & _StringRepeat(" ", 24 - StringLen(String($currentSeed))) & $reason)
+			EndIf
 		EndIf
 		
 		$searchCount += 1
@@ -723,17 +758,33 @@ Func DoSearch()
 				GUICtrlSetData($progressLabel1, $searchCount & "/" & $maxSeedsToEvaluate & " seeds searched")
 				GUICtrlSetData($progressBar1, ($searchCount / $maxSeedsToEvaluate) * 100)
 			EndIf
-			GUICtrlSetData($progressLabel2, $seedsFoundCount & "/" & $seedsToFind & " seeds found")
-			GUICtrlSetData($progressBar2, ($seedsFoundCount / $seedsToFind) * 100)
+			If $seedsToFind = 0 And $useRandomSeeds = 0 Then
+				GUICtrlSetData($progressLabel2, $seedsFoundCount & "/∞ seeds found")
+				GUICtrlSetData($progressBar2, 100)
+			Else
+				GUICtrlSetData($progressLabel2, $seedsFoundCount & "/" & $seedsToFind & " seeds found")
+				GUICtrlSetData($progressBar2, ($seedsFoundCount / $seedsToFind) * 100)
+			EndIf
 		EndIf
 	Wend
+	
+	; Update offset if we're using a seed list file
+	If $useRandomSeeds = 0 Then
+		IniWrite($settingsINIFile, "Options", "SeedOffset", $seedOffset)
+	EndIf
+	
+	$time = TimerDiff($timer)
+	_TicksToTime($time, $hours, $minutes, $seconds)
 	
 	WinActivate("Amidst Seed Hunter")
 	
 	_Toast_Hide()
 	
-	ResultsWrite(@CRLF & $searchCount & " seed" & ($searchCount = 1 ? " " : "s ") & "evaluated")
+	ResultsWrite(@CRLF & "Summary:" & @CRLF & "====================")
+	ResultsWrite($searchCount & " seed" & ($searchCount = 1 ? " " : "s ") & "evaluated")
 	ResultsWrite($seedsFoundCount & " seed" & ($seedsFoundCount = 1 ? " " : "s ") & "found")
+	ResultsWrite(Round((($searchCount - $seedsFoundCount) / $searchCount) * 100, 1) & "% rejection rate")
+	ResultsWrite("Time elapsed: " & StringFormat("%02d:%02d:%02d", $hours, $minutes, $seconds))
 EndFunc
 #EndRegion
 
@@ -1091,30 +1142,35 @@ Func Main()
 					DoHideResultsTab()
 					DoHideDebugTab()
 					DoShowBiomesTab()
+					_GUICtrlTab_SetCurFocus($tabSet, _GUICtrlTab_FindTab($tabSet, "Biomes"))
 				Case "Structures"
 					DoHideBiomesTab()
 					DoHideOptionsTab()
 					DoHideResultsTab()
 					DoHideDebugTab()
 					DoShowStructuresTab()
+					_GUICtrlTab_SetCurFocus($tabSet, _GUICtrlTab_FindTab($tabSet, "Structures"))
 				Case "Options"
 					DoHideBiomesTab()
 					DoHideStructuresTab()
 					DoHideResultsTab()
 					DoHideDebugTab()
 					DoShowOptionsTab()
+					_GUICtrlTab_SetCurFocus($tabSet, _GUICtrlTab_FindTab($tabSet, "Options"))
 				Case "Search Results"
 					DoHideBiomesTab()
 					DoHideStructuresTab()
 					DoHideOptionsTab()
 					DoHideDebugTab()
 					DoShowResultsTab()
+					_GUICtrlTab_SetCurFocus($tabSet, _GUICtrlTab_FindTab($tabSet, "Search Results"))
 				Case "Debug"
 					DoHideBiomesTab()
 					DoHideStructuresTab()
 					DoHideOptionsTab()
 					DoHideResultsTab()
 					DoShowDebugTab()
+					_GUICtrlTab_SetCurFocus($tabSet, _GUICtrlTab_FindTab($tabSet, "Debug"))
 				Case Else
 					; Do nothing
 			EndSwitch

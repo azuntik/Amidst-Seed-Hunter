@@ -545,9 +545,11 @@ Func DoRestoreHiddenDialogs()
 	If $response = $IDYES Then
 		; Preset warning dialog box
 		RegDelete("HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\DontShowMeThisDialogAgain", "{5BB57EAD-D839-4605-8B91-523203CE3935}")
-		; False postivies/negatives warning box
+		; False postivies/negatives warning dialog box
 		RegDelete("HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\DontShowMeThisDialogAgain", "{3AC815B9-2394-4E3C-92CA-E51BCBDEDE16}")
-
+		; Begin search info dialog box
+		RegDelete("HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\DontShowMeThisDialogAgain", "{2D6A1CA1-EE2B-4AD2-9FB8-60052F49C56B}")
+		
 		If @error = 0 Then
 			MsgBox(BitOR($MB_OK, $MB_ICONINFORMATION), "Hidden messages restored", "All hidden messages have been restored.")
 		EndIf
