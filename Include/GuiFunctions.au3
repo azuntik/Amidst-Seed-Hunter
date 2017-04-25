@@ -1,5 +1,5 @@
 ; =============================================================================
-; Amidst Seed Hunter GUI Functions (GuiFunctions.au3)
+; Amidst Seed Hunter - GUI Functions (GuiFunctions.au3)
 ;
 ; Author: 	Azuntik (seedhunter@azuntik.com)
 ; Date:		2017.4.22
@@ -682,10 +682,14 @@ Func DoResetINIFileToDefaults($prompt = True)
 	EndIf
 EndFunc
 
-Func DoClearResultsEdit()
+Func DoClearResultsEdit($prompt = True)
 	Dim $response
 	
-	$response = MsgBox(BitOR($MB_YESNO, $MB_ICONQUESTION), "Clear Search Results?", "This action will clear all search results from this window. This cannot be undone." & @CRLF & @CRLF & "Are you sure?")
+	If $prompt Then
+		$response = MsgBox(BitOR($MB_YESNO, $MB_ICONQUESTION), "Clear Search Results?", "This action will clear all search results from this window. This cannot be undone." & @CRLF & @CRLF & "Are you sure?")
+	Else
+		$response = $IDYES
+	EndIf
 	
 	If $response = $IDYES Then
 		DebugWrite("Clearing search results edit")

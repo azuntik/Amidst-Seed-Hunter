@@ -41,6 +41,8 @@ If you want to search indefinitely (until you find the number of seeds you're lo
 ## History
 
 13 April 2017 - First commit! v0.1
+23 April 2017 - v0.2 - Major feature update
+24 April 2017 - v0.2.1 - Fixed a handful of bugs and added guided Amidst setup
 
 ## Credits
 

@@ -53,3 +53,5 @@ Settings.ini
 Settings.ini
 test_seeds.txt
 *.ini
+Settings.ini
+*.exe
