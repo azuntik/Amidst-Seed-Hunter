@@ -468,7 +468,7 @@ Func _Toast_Show($vIcon, $sTitle, $sMessage, $iDelay = 0, $fWait = True, $fRaw =
 	$nOldOpt = Opt('GUIOnEventMode', $nOldOpt)
 
 	; Create array to return Toast dimensions
-	Local $aToast_Data[3] = [$iToast_Width, $iToast_Height, $iLine_Height]
+	Local $aToast_Data[4] = [$iToast_Width, $iToast_Height, $iLine_Height, $hToast_Handle]
 
 	Return $aToast_Data
 
