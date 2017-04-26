@@ -10,8 +10,6 @@
 ; =============================================================================
 
 AutoItSetOption("MustDeclareVars", 1)
-HotKeySet("{ESC}", "StopExecution") ; For early termination of the search loop
-HotKeySet("{BACKSPACE}", "ResetHotkey")
 
 #include <Array.au3>
 #include <Clipboard.au3>
@@ -36,7 +34,8 @@ HotKeySet("{BACKSPACE}", "ResetHotkey")
 #include "Include\PresetFunctions.au3"
 
 #Region Globals
-Global $debugBuffer, $searchResults, $newSearch, $versionNumber
+Global $debugBuffer, $searchResults, $newSearch
+Global $versionNumber = "0.2.2"
 
 ; GUI control globals
 Global $form, $tabSet, $biomesTab, $structuresTab, $optionsTab, $resultsTab, $debugTab

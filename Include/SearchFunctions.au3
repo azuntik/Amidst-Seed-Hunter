@@ -259,7 +259,11 @@ Func DoSearch()
 	EndIf
 
 	$timer = TimerInit()
-
+	
+	; Hotkeys are set here to avoid interference with other programs as much as possible
+	HotKeySet("{ESC}", "StopExecution")
+	HotKeySet("{BACKSPACE}", "ResetHotkey")
+	
 	; Search loop
 	While 1
 		If @HotKeyPressed = "{ESC}" Then ExitLoop
@@ -352,7 +356,7 @@ Func DoSearch()
 	
 	WinActivate("Amidst Seed Hunter")
 	
-	_Toast_Hide()
+	If $showProgressPopupWindow = 1 Then _Toast_Hide()
 	
 	ResultsWrite(@CRLF & "Summary:" & @CRLF & "====================")
 	ResultsWrite($searchCount & " seed" & ($searchCount = 1 ? " " : "s ") & "evaluated")
@@ -375,4 +379,8 @@ Func DoSearch()
 		GUISwitch($form)
 		;MsgBox(BitOR($MB_OK, $MB_ICONINFORMATION), "Early termination reset", "Early search termination has been reset.")
 	EndIf
+	
+	; Unset hotkey
+	HotKeySet("{ESC}") 
+	HotKeySet("{BACKSPACE}")
 EndFunc

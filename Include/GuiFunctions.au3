@@ -11,7 +11,7 @@
 
 #Region Build GUI Functions
 Func DoBuildMainGUI()
-	$form = GUICreate("Amidst Seed Hunter v0.2.1", 500, 500)
+	$form = GUICreate("Amidst Seed Hunter v" & $versionNumber, 500, 500)
 
 	$tabSet = _GUICtrlTab_Create($form, 5, 5, 490, 457)
 

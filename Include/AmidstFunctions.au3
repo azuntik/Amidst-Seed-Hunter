@@ -95,36 +95,44 @@ Func DoGuidedAmidstSetup()
 		Return True
 	EndIf
 	
+	_Toast_Set(Default)
+		
 	If AmidstIsRunning() = False And FileExists(@ScriptDir & "\amidst-v4-2.exe") Then
 		DebugWrite("Amidst found. Starting automatically.")
 		$msg = "I found Amidst in the working directory. I'll run it for you."
-		$toast = _Toast_Show(0, "Amidst EXE found!", $msg, -5, False)
+		$toast = _Toast_Show(0, "Amidst EXE found!", $msg, -2, False)
 		Run(@ScriptDir & "\amidst-v4-2.exe")
 		Sleep(5000)
 	EndIf
-	
-	_Toast_Set(Default)
 	
 	; Start Amidst
 	While AmidstIsRunning() = False
 		If WinExists("Profile Selector") Then
 			DebugWrite("Amidst is running, but user needs to select a profile")
 			$msg = "Amidst is running, but you have to select your Minecraft profile before you proceed."
-			$msg &= @CRLF & @CRLF & "If you don't see a Minecraft profile, you will need to install Minecraft first. You can try searching again after you've done that."
+			$msg &= @CRLF & @CRLF & "If you don't see a Minecraft profile, you will need to install Minecraft first. You can try searching again after you've done that." & @CRLF & @CRLF
 			$toast = _Toast_Show(0, "Choose your Minecraft profile", $msg)
-			
+			GUISwitch($toast[3])
+			$button = GUICtrlCreateButton("Exit to Install Minecraft", ($toast[0] - 150) / 2, $toast[1] - 35, 150, 25)
 			While WinExists("Profile Selector")
-				; Wait for the user to select the profile
+				; Wait for the user to select the profile or exit
+				If GUIGetMsg() = $button Then 
+					_Toast_Hide()
+					Return
+				EndIf
 			Wend
+			_Toast_Hide()
 		Else
 			DebugWrite("Amidst isn't running")
 			$toast = _Toast_Show(0, "Amidst Guided Setup", "Amidst doesn't appear to be running. If you have not downloaded Amidst, that's your first step. You'll need to download and run " & $amidstWindowTitle & ". You can search for it online, or just click here:" & @CRLF & @CRLF & @CRLF & @CRLF & "When it's running, click 'Next Step'." & @CRLF & @CRLF)
+			GUISwitch($toast[3])
 			$downloadButton = GUICtrlCreateButton("Download " & $amidstWindowTitle, ($toast[0] - 140) / 2, $toast[1] - 95, 140, 25, $BS_FLAT)
 			$button = GUICtrlCreateButton("Next Step", ($toast[0] - 90) / 2, $toast[1] - 35, 90, 25)
 		
 			While 1
 				Switch GUIGetMsg()
 					Case $button
+						_Toast_Hide()
 						ExitLoop
 					Case $downloadButton
 						DebugWrite("Launching browser to download Amidst")
@@ -141,6 +149,7 @@ Func DoGuidedAmidstSetup()
 	$msg &= "'New from random seed' or just press CTRL+R." & @CRLF & @CRLF
 	$msg &= "When you're done, click 'Next Step'" & @CRLF & @CRLF
 	$toast = _Toast_Show(0, "Amidst is running!", $msg)
+	GUISwitch($toast[3])
 	$button = GUICtrlCreateButton("Next Step", ($toast[0] - 90) / 2, $toast[1] - 35, 90, 25)
 	While 1
 		Switch GUIGetMsg()
@@ -148,12 +157,14 @@ Func DoGuidedAmidstSetup()
 				ExitLoop
 		EndSwitch
 	WEnd
+	_Toast_Hide()
 	
 	; Turn on grid
 	$msg = "Now that we have a map to play with, click on the 'Layers' menu and turn on the Grid, "
 	$msg &= "if it isn't already on." & @CRLF & @CRLF
 	$msg &= "When you're done, click 'Next Step'" & @CRLF & @CRLF
 	$toast = _Toast_Show(0, "Configuring Amidst", $msg)
+	GUISwitch($toast[3])
 	$button = GUICtrlCreateButton("Next Step", ($toast[0] - 90) / 2, $toast[1] - 35, 90, 25)
 	While 1
 		Switch GUIGetMsg()
@@ -161,6 +172,7 @@ Func DoGuidedAmidstSetup()
 				ExitLoop
 		EndSwitch
 	WEnd
+	_Toast_Hide()
 	
 	; Adjust zoom and window size
 	$msg = "This next step is critical to getting the results you want. We're going to adjust the "
@@ -175,6 +187,7 @@ Func DoGuidedAmidstSetup()
 	$msg &= "so don't worry." & @CRLF & @CRLF
 	$msg &= "When you're done, click 'Next Step'" & @CRLF & @CRLF
 	$toast = _Toast_Show(0, "Configuring Amidst", $msg)
+	GUISwitch($toast[3])
 	$button = GUICtrlCreateButton("Next Step", ($toast[0] - 90) / 2, $toast[1] - 35, 90, 25)
 	While 1
 		Switch GUIGetMsg()
@@ -182,6 +195,7 @@ Func DoGuidedAmidstSetup()
 				ExitLoop
 		EndSwitch
 	WEnd
+	_Toast_Hide()
 	
 	; Turn off the grid and turn on other layers that might be needed
 	$msg = "We're almost ready to start our search! Our last step is to turn off the layers we don't need "
@@ -198,6 +212,7 @@ Func DoGuidedAmidstSetup()
 	EndIf
 	$msg &= "When you're done, click 'Next Step'" & @CRLF & @CRLF
 	$toast = _Toast_Show(0, "Configuring Amidst", $msg)
+	GUISwitch($toast[3])
 	$button = GUICtrlCreateButton("Next Step", ($toast[0] - 90) / 2, $toast[1] - 35, 90, 25)
 	While 1
 		Switch GUIGetMsg()
@@ -205,6 +220,7 @@ Func DoGuidedAmidstSetup()
 				ExitLoop
 		EndSwitch
 	WEnd
+	_Toast_Hide()
 	
 	; We're done!
 	$msg = "You're done! As long as you followed the preceeding steps correctly, you should be ready to "
@@ -212,6 +228,7 @@ Func DoGuidedAmidstSetup()
 	$msg &= "Before we do that, though, here's one last chance to get everything set up the way you want "
 	$msg &= "before we start. When you're ready, click 'Next Step'" & @CRLF & @CRLF
 	$toast = _Toast_Show(0, "You're done!", $msg)
+	GUISwitch($toast[3])
 	$button = GUICtrlCreateButton("Next Step", ($toast[0] - 90) / 2, $toast[1] - 35, 90, 25)
 	While 1
 		Switch GUIGetMsg()
@@ -219,7 +236,6 @@ Func DoGuidedAmidstSetup()
 				ExitLoop
 		EndSwitch
 	WEnd
-	
 	_Toast_Hide()
 	
 	$amidstSetupComplete = True
