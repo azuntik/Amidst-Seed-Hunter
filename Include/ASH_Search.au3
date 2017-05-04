@@ -1,12 +1,11 @@
 ; =============================================================================
-; Amidst Seed Hunter - Search Functions (SearchFunctions.au3)
+; Amidst Seed Hunter - Search (ASH_Search.au3)
 ;
-; Author: 	Azuntik (seedhunter@azuntik.com)
-; Date:		2017.4.22
-; Download: https://github.com/azuntik/Amidst-Seed-Hunter/releases
+; Author: 	Azuntik
+; Date:		2017.5.2
 ; License:	CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
 ;
-; For use with Amidst v4.2 (https://github.com/toolbox4minecraft/amidst).
+; This file is part of the Amidst Seed Hunter project
 ; =============================================================================
 
 Func StopExecution()
@@ -383,4 +382,27 @@ Func DoSearch()
 	; Unset hotkey
 	HotKeySet("{ESC}") 
 	HotKeySet("{BACKSPACE}")
+EndFunc
+
+Func DoAdvancedSearch()
+	MsgBox(BitOR($MB_OK, $MB_ICONERROR), "Feature not available", "We're sorry, but this feature is not currently available. Please watch for it in a future release.")
+	Return
+	
+	Dim $response
+
+	$response = _WinAPI_MessageBoxCheck(BitOR($MB_YESNO, $MB_ICONQUESTION), "Advanced search", "Advanced search functionality allows you to be more specific in how you include and exclude biomes and structures in your search criteria. This feature is not for everyone, but can be very useful for advanced users. For more information, please visit our the Wiki on our Github repository." & @CRLF & @CRLF & "Do you wish to continue?", "{187F1EDF-1D86-4DAC-AC8F-137B3BA13634}", $IDYES)
+	
+	If $response = $IDYES Then
+		Dim $searchString
+		
+		SetError(0)
+		
+		$searchString = InputBox("Advanced search", "Enter your search string. Click OK to begin search.")
+		
+		If @error = 1 Then ; Cancel button was pressed
+			MsgBox(0,"","Advanced search canceled")
+			Return
+		EndIf
+		
+	EndIf
 EndFunc

@@ -1,12 +1,11 @@
 ; =============================================================================
-; Amidst Seed Hunter - Preset Functions (PresetFunctions.au3)
+; Amidst Seed Hunter - Presets (ASH_Presets.au3)
 ;
-; Author: 	Azuntik (seedhunter@azuntik.com)
-; Date:		2017.4.22
-; Download: https://github.com/azuntik/Amidst-Seed-Hunter/releases
+; Author: 	Azuntik
+; Date:		2017.5.2
 ; License:	CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
 ;
-; For use with Amidst v4.2 (https://github.com/toolbox4minecraft/amidst).
+; This file is part of the Amidst Seed Hunter project
 ; =============================================================================
 
 Func DoPresetButton($preset)
@@ -204,20 +203,28 @@ Func DoApplyPreset($preset)
 	EndIf
 EndFunc
 
-Func DoRemovePreset($preset)
-	Dim $arrayOffset
+Func DoRemovePreset($preset, $prompt = False)
+	Dim $arrayOffset, $response
 	
-	IniWrite($settingsINIFile, "Presets", "Preset" & $preset & "Name", "")
-	IniWrite($settingsINIFile, "Presets", "Preset" & $preset & "Include", "")
-	IniWrite($settingsINIFile, "Presets", "Preset" & $preset & "Exclude", "")
+	If $prompt Then
+		$response = _WinAPI_MessageBoxCheck(BitOR($MB_YESNO, $MB_ICONQUESTION), "Remove preset", "You are about to remove this preset. This action cannot be undone." & @CRLF & @CRLF & "Are you sure?", "{E0E777CD-DA7B-40E0-9ECC-9ADD4F2BE0E9}", $IDYES)
+	Else
+		$response = $IDYES
+	EndIf
 	
-	$arrayOffset = $preset * 3 + 1 ; Each preset takes 3 rows, starting with row 1
+	If $response = $IDYES Then
+		IniWrite($settingsINIFile, "Presets", "Preset" & $preset & "Name", "")
+		IniWrite($settingsINIFile, "Presets", "Preset" & $preset & "Include", "")
+		IniWrite($settingsINIFile, "Presets", "Preset" & $preset & "Exclude", "")
+		
+		$arrayOffset = $preset * 3 + 1 ; Each preset takes 3 rows, starting with row 1
+		
+		$presetArray[$arrayOffset][1] = ""
+		$presetArray[$arrayOffset + 1][1] = ""
+		$presetArray[$arrayOffset + 2][1] = ""
 	
-	$presetArray[$arrayOffset][1] = ""
-	$presetArray[$arrayOffset + 1][1] = ""
-	$presetArray[$arrayOffset + 2][1] = ""
-	
-	DebugWrite("Preset " & $preset & " removed")
+		DebugWrite("Preset " & $preset & " removed")
+	EndIf
 EndFunc
 
 Func DoUpdatePresets()

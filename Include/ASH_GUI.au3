@@ -1,12 +1,11 @@
 ; =============================================================================
-; Amidst Seed Hunter - GUI Functions (GuiFunctions.au3)
+; Amidst Seed Hunter - GUI (ASH_GUI.au3)
 ;
-; Author: 	Azuntik (seedhunter@azuntik.com)
-; Date:		2017.4.22
-; Download: https://github.com/azuntik/Amidst-Seed-Hunter/releases
+; Author: 	Azuntik
+; Date:		2017.5.2
 ; License:	CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
 ;
-; For use with Amidst v4.2 (https://github.com/toolbox4minecraft/amidst).
+; This file is part of the Amidst Seed Hunter project
 ; =============================================================================
 
 #Region Build GUI Functions
@@ -16,6 +15,8 @@ Func DoBuildMainGUI()
 	$tabSet = _GUICtrlTab_Create($form, 5, 5, 490, 457)
 
 	$beginSearchButton = GUICtrlCreateButton("Begin Search...", 397, 467, 95, 25)
+	$searchContextMenu = GUICtrlCreateContextMenu($beginSearchButton)
+	$advancedSearchMenuItem = GUICtrlCreateMenuItem("Advanced Search...", $searchContextMenu)
 	$cancelQuitButton = GUICtrlCreateButton("Cancel/Quit", 5, 467, 95, 25)
 
 	If $searchForBiomes = 1 Then DoBuildBiomesTab()
@@ -65,7 +66,22 @@ Func DoBuildBiomesTab()
 	$excludedBiomeLabel = GUICtrlCreateLabel("Excluded Biomes:", 306, 233)
 	GUICtrlSetBkColor($excludedBiomeLabel, $GUI_BKCOLOR_TRANSPARENT)
 	_ArrayAdd($biomeTabControlsArray, $excludedBiomeLabel)
-
+	
+	#cs
+	$includedBiomeGroupButton = GUICtrlCreateButton("Biome Group...", 392, 33, 94, 20, $BS_SPLITBUTTON)
+	;$includedBiomeGroupButton = _GUICtrlButton_Create($form, "Biome Group...", 392, 33, 94, 20, $BS_SPLITBUTTON)
+	_ArrayAdd($biomeTabControlsArray, $includedBiomeGroupButton)
+	
+	$excludedBiomeGroupButton = GUICtrlCreateButton("Biome Group...", 392, 229, 94, 20, $BS_SPLITBUTTON)
+	;$excludedBiomeGroupButton = _GUICtrlButton_Create($form, "Biome Group...", 392, 229, 94, 20, $BS_SPLITBUTTON)
+	_ArrayAdd($biomeTabControlsArray, $excludedBiomeGroupButton)
+	
+	If $enableBiomeGroups = 0 Then
+		GUICtrlSetState($includedBiomeGroupButton, $GUI_HIDE)
+		GUICtrlSetState($excludedBiomeGroupButton, $GUI_HIDE)
+	EndIf
+	#ce
+	
 	$includeBiomeButton = GUICtrlCreateButton("Include ->", 203, 105, 90, 25)
 	_ArrayAdd($biomeTabControlsArray, $includeBiomeButton)
 
@@ -86,27 +102,43 @@ Func DoBuildBiomesTab()
 
 	$temp = _ArraySearch($presetArray, "Preset0Name")
 	$preset0Button = GUICtrlCreateButton($presetArray[$temp][1], 12, 429, 90, 25)
+	$preset0ContextMenu = GUICtrlCreateContextMenu($preset0Button)
+	$removePreset0 = GUICtrlCreateMenuItem("Remove this preset", $preset0ContextMenu)
 	_ArrayAdd($biomeTabControlsArray, $preset0Button)
 
 	$temp = _ArraySearch($presetArray, "Preset1Name")
 	$preset1Button = GUICtrlCreateButton($presetArray[$temp][1], 108, 429, 90, 25)
+	$preset1ContextMenu = GUICtrlCreateContextMenu($preset1Button)
+	$removePreset1 = GUICtrlCreateMenuItem("Remove this preset", $preset1ContextMenu)
 	_ArrayAdd($biomeTabControlsArray, $preset1Button)
 
 	$temp = _ArraySearch($presetArray, "Preset2Name")
 	$preset2Button = GUICtrlCreateButton($presetArray[$temp][1], 204, 429, 90, 25)
+	$preset2ContextMenu = GUICtrlCreateContextMenu($preset2Button)
+	$removePreset2 = GUICtrlCreateMenuItem("Remove this preset", $preset2ContextMenu)
 	_ArrayAdd($biomeTabControlsArray, $preset2Button)
 
 	$temp = _ArraySearch($presetArray, "Preset3Name")
 	$preset3Button = GUICtrlCreateButton($presetArray[$temp][1], 300, 429, 90, 25)
+	$preset3ContextMenu = GUICtrlCreateContextMenu($preset3Button)
+	$removePreset3 = GUICtrlCreateMenuItem("Remove this preset", $preset3ContextMenu)
 	_ArrayAdd($biomeTabControlsArray, $preset3Button)
 
 	$temp = _ArraySearch($presetArray, "Preset4Name")
 	$preset4Button = GUICtrlCreateButton($presetArray[$temp][1], 396, 429, 90, 25)
+	$preset4ContextMenu = GUICtrlCreateContextMenu($preset4Button)
+	$removePreset4 = GUICtrlCreateMenuItem("Remove this preset", $preset4ContextMenu)
 	_ArrayAdd($biomeTabControlsArray, $preset4Button)
 
 	For $i = 1 to UBound($biomeArray) - 1
 		_GUICtrlListBox_AddString($availableBiomeList, $biomeArray[$i][0])
 	Next
+	
+	If $enableBiomeGroups = 1 Then
+		For $i = 1 to UBound($biomeGroupArray) - 1
+			_GUICtrlListBox_AddString($availableBiomeList, $biomeGroupArray[$i][0])
+		Next
+	EndIf
 
 	DoHideBiomesTab()
 EndFunc
@@ -161,22 +193,32 @@ Func DoBuildStructuresTab()
 
 	$temp = _ArraySearch($presetArray, "Preset5Name")
 	$preset5Button = GUICtrlCreateButton($presetArray[$temp][1], 12, 429, 90, 25)
+	$preset5ContextMenu = GUICtrlCreateContextMenu($preset5Button)
+	$removePreset5 = GUICtrlCreateMenuItem("Remove this preset", $preset5ContextMenu)
 	_ArrayAdd($structTabControlsArray, $preset5Button)
 
 	$temp = _ArraySearch($presetArray, "Preset6Name")
 	$preset6Button = GUICtrlCreateButton($presetArray[$temp][1], 108, 429, 90, 25)
+	$preset6ContextMenu = GUICtrlCreateContextMenu($preset6Button)
+	$removePreset6 = GUICtrlCreateMenuItem("Remove this preset", $preset6ContextMenu)
 	_ArrayAdd($structTabControlsArray, $preset6Button)
 
 	$temp = _ArraySearch($presetArray, "Preset7Name")
 	$preset7Button = GUICtrlCreateButton($presetArray[$temp][1], 204, 429, 90, 25)
+	$preset7ContextMenu = GUICtrlCreateContextMenu($preset7Button)
+	$removePreset7 = GUICtrlCreateMenuItem("Remove this preset", $preset7ContextMenu)
 	_ArrayAdd($structTabControlsArray, $preset7Button)
 
 	$temp = _ArraySearch($presetArray, "Preset8Name")
 	$preset8Button = GUICtrlCreateButton($presetArray[$temp][1], 300, 429, 90, 25)
+	$preset8ContextMenu = GUICtrlCreateContextMenu($preset8Button)
+	$removePreset8 = GUICtrlCreateMenuItem("Remove this preset", $preset8ContextMenu)
 	_ArrayAdd($structTabControlsArray, $preset8Button)
 
 	$temp = _ArraySearch($presetArray, "Preset9Name")
 	$preset9Button = GUICtrlCreateButton($presetArray[$temp][1], 396, 429, 90, 25)
+	$preset9ContextMenu = GUICtrlCreateContextMenu($preset9Button)
+	$removePreset9 = GUICtrlCreateMenuItem("Remove this preset", $preset9ContextMenu)
 	_ArrayAdd($structTabControlsArray, $preset9Button)
 
 	For $i = 1 to UBound($structArray) - 1
@@ -242,17 +284,24 @@ Func DoBuildOptionsTab()
 	If $searchForBiomes = 1 Then GUICtrlSetState($searchForBiomeChkbx, $GUI_CHECKED)
 	_ArrayAdd($optionsTabControlsArray, $searchForBiomeChkbx)
 
-	$searchForStructChkbx = GUICtrlCreateCheckbox("Search for structures", 20, 169)
+	#cs
+	$enableBiomeGroupsChkbx = GUICtrlCreateCheckbox("Enable biome groups", 20, 169)
+	GUICtrlSetBkColor($enableBiomeGroupsChkbx, $COLOR_WHITE) ;$GUI_BKCOLOR_TRANSPARENT)
+	If $enableBiomeGroups = 1 Then GUICtrlSetState($enableBiomeGroupsChkbx, $GUI_CHECKED)
+	_ArrayAdd($optionsTabControlsArray, $enableBiomeGroupsChkbx)
+	#ce
+	
+	$searchForStructChkbx = GUICtrlCreateCheckbox("Search for structures", 20, 193)
 	GUICtrlSetBkColor($searchForStructChkbx, $COLOR_WHITE) ;$GUI_BKCOLOR_TRANSPARENT)
 	If $searchForStructures = 1 Then GUICtrlSetState($searchForStructChkbx, $GUI_CHECKED)
 	_ArrayAdd($optionsTabControlsArray, $searchForStructChkbx)
 
-	$saveResultsToFileChkbx = GUICtrlCreateCheckbox("Save search results to file", 20, 193)
+	$saveResultsToFileChkbx = GUICtrlCreateCheckbox("Save search results to file", 20, 217)
 	GUICtrlSetBkColor($saveResultsToFileChkbx, $COLOR_WHITE) ;$GUI_BKCOLOR_TRANSPARENT)
 	If $saveSearchResultsToFile = 1 Then GUICtrlSetState($saveResultsToFileChkbx, $GUI_CHECKED)
 	_ArrayAdd($optionsTabControlsArray, $saveResultsToFileChkbx)
 
-	$includeRejectedSeedsChkbx = GUICtrlCreateCheckbox("Include rejected seeds in search results", 20, 217)
+	$includeRejectedSeedsChkbx = GUICtrlCreateCheckbox("Include rejected seeds in search results", 275, 193)
 	GUICtrlSetBkColor($includeRejectedSeedsChkbx, $COLOR_WHITE) ;$GUI_BKCOLOR_TRANSPARENT)
 	If $includeRejectedSeeds = 1 Then GUICtrlSetState($includeRejectedSeedsChkbx, $GUI_CHECKED)
 	_ArrayAdd($optionsTabControlsArray, $includeRejectedSeedsChkbx)
@@ -295,6 +344,7 @@ Func DoBuildOptionsTab()
 	If $guidedAmidstSetup = 1 Then GUICtrlSetState($guidedAmidstSetupChkbx, $GUI_CHECKED)
 	_ArrayAdd($optionsTabControlsArray, $guidedAmidstSetupChkbx)
 
+	#cs
 	$saveScreenshotChkbx = GUICtrlCreateCheckbox("Save screenshot of matching seed maps", 20, 312)
 	GUICtrlSetBkColor($saveScreenshotChkbx, $COLOR_WHITE) ;$GUI_BKCOLOR_TRANSPARENT)
 	If $saveScreenshots = 1 Then GUICtrlSetState($saveScreenshotChkbx, $GUI_CHECKED)
@@ -309,7 +359,8 @@ Func DoBuildOptionsTab()
 	GUICtrlSetBkColor($macLinuxCompatChkbx, $COLOR_WHITE) ;$GUI_BKCOLOR_TRANSPARENT)
 	If $macLinuxCompatibility = 1 Then GUICtrlSetState($macLinuxCompatChkbx, $GUI_CHECKED)
 	_ArrayAdd($optionsTabControlsArray, $macLinuxCompatChkbx)
-
+	#ce
+	
 	$showProgressPopupChkbx = GUICtrlCreateCheckbox("Show progress popup window", 275, 288)
 	GUICtrlSetBkColor($showProgressPopupChkbx, $COLOR_WHITE) ;$GUI_BKCOLOR_TRANSPARENT)
 	If $showProgressPopupWindow = 1 Then GUICtrlSetState($showProgressPopupChkbx, $GUI_CHECKED)
@@ -423,6 +474,11 @@ Func DoShowBiomesTab()
 		ControlShow($tabSet, "", $biomeTabControlsArray[$i])
 		GUICtrlSetState($biomeTabControlsArray[$i], $GUI_SHOW)
 	Next
+	
+	If $enableBiomeGroups = 0 Then
+		GUICtrlSetState($includedBiomeGroupButton, $GUI_HIDE)
+		GUICtrlSetState($excludedBiomeGroupButton, $GUI_HIDE)
+	EndIf
 EndFunc
 
 Func DoHideBiomesTab()
@@ -490,6 +546,89 @@ EndFunc
 #EndRegion
 
 #Region GUI Manipulation Functions
+#cs
+Func WM_COMMAND($hWnd, $iMsg, $wParam, $lParam)
+    #forceref $hWnd, $iMsg
+    Local $nNotifyCode = BitShift($wParam, 16)
+    Local $nID = BitAND($wParam, 0x0000FFFF)
+    Local $hCtrl = $lParam
+    Local $sText = ""
+
+	Switch $hCtrl
+        Case $g_idBtn, $g_idBtn2
+            Switch $nNotifyCode
+                Case $BN_CLICKED
+                    $sText = "$BN_CLICKED" & @CRLF
+                Case $BN_PAINT
+                    $sText = "$BN_PAINT" & @CRLF
+                Case $BN_PUSHED, $BN_HILITE
+                    $sText = "$BN_PUSHED, $BN_HILITE" & @CRLF
+                Case $BN_UNPUSHED, $BN_UNHILITE
+                    $sText = "$BN_UNPUSHED" & @CRLF
+                Case $BN_DISABLE
+                    $sText = "$BN_DISABLE" & @CRLF
+                Case $BN_DBLCLK, $BN_DOUBLECLICKED
+                    $sText = "$BN_DBLCLK, $BN_DOUBLECLICKED" & @CRLF
+                Case $BN_SETFOCUS
+                    $sText = "$BN_SETFOCUS" & @CRLF
+                Case $BN_KILLFOCUS
+                    $sText = "$BN_KILLFOCUS" & @CRLF
+            EndSwitch
+            Return 0 ; Only workout clicking on the button
+    EndSwitch
+    ; Proceed the default AutoIt3 internal message commands.
+    ; You also can complete let the line out.
+    ; !!! But only 'Return' (without any value) will not proceed
+    ; the default AutoIt3-message in the future !!!
+    Return $GUI_RUNDEFMSG
+EndFunc   ;==>WM_COMMAND
+
+Func WM_NOTIFY($hWnd, $iMsg, $wParam, $lParam)
+    #forceref $hWnd, $iMsg, $wParam
+    Local Const $BCN_HOTITEMCHANGE = -1249
+    Local $tNMBHOTITEM = DllStructCreate("hwnd hWndFrom;int IDFrom;int Code;dword dwFlags", $lParam)
+    Local $nNotifyCode = DllStructGetData($tNMBHOTITEM, "Code")
+    Local $nID = DllStructGetData($tNMBHOTITEM, "IDFrom")
+    Local $hCtrl = DllStructGetData($tNMBHOTITEM, "hWndFrom")
+    Local $iFlags = DllStructGetData($tNMBHOTITEM, "dwFlags")
+    Local $sText = ""
+	
+	DoBiomeGroupPopupMenu($hCtrl)
+	
+	Return $GUI_RUNDEFMSG
+EndFunc   ;==>WM_NOTIFY
+
+Func DoBiomeGroupPopupMenu($hCtrl)
+	Local $hMenu
+    Local Enum $e_idOpen = 1000, $e_idSave, $e_idInfo
+    $hMenu = _GUICtrlMenu_CreatePopup()
+    _GUICtrlMenu_InsertMenuItem($hMenu, 0, "Open", $e_idOpen)
+    _GUICtrlMenu_InsertMenuItem($hMenu, 1, "Save", $e_idSave)
+    _GUICtrlMenu_InsertMenuItem($hMenu, 3, "", 0)
+    _GUICtrlMenu_InsertMenuItem($hMenu, 3, "Info", $e_idInfo)
+    Switch _GUICtrlMenu_TrackPopupMenu($hMenu, $hCtrl, -1, -1, 1, 1, 2)
+        Case $e_idOpen
+            MemoWrite("Open - Selected")
+        Case $e_idSave
+            MemoWrite("Save - Selected")
+        Case $e_idInfo
+            MemoWrite("Info - Selected")
+    EndSwitch
+    _GUICtrlMenu_DestroyMenu($hMenu)
+EndFunc
+
+Func DoUpdateBiomeGroup($list)
+	
+EndFunc
+
+Func DoRightClickAction()
+	Dim $cursorInfo = GUIGetCursorInfo($form)
+	Dim $controlUnderMouse = $cursorInfo[4]
+	
+	;MsgBox(0,"Right click", "You clicked " & $controlUnderMouse)
+EndFunc
+#ce
+
 Func DoSelectAllListItems($list)
 	DebugWrite("Selecting all items in list " & $list)
 	Dim $numItems = _GUICtrlListBox_GetListBoxInfo($list)
@@ -537,6 +676,23 @@ Func DoGetResultsOutputFile()
 	DebugWrite("ResultsFile set to '" & $resultsFile & "'")
 EndFunc
 
+#cs
+Func DoAddBiomeGroupsToList()
+	For $i = 1 to UBound($biomeGroupArray) - 1
+		; Make sure the string doesn't exist before adding it
+		If _GUICtrlListBox_FindString($availableBiomeList, $biomeGroupArray[$i][0]) = -1 Then
+			_GUICtrlListBox_AddString($availableBiomeList, $biomeGroupArray[$i][0])
+		EndIf
+	Next
+EndFunc
+
+Func DoRemoveBiomeGroupsFromList()
+	For $i = 1 to UBound($biomeGroupArray) - 1
+		_GUICtrlListBox_DeleteString($availableBiomeList, $biomeGroupArray[$i][0])
+	Next
+EndFunc
+#ce
+
 Func DoRestoreHiddenDialogs()
 	Dim $response
 
@@ -549,6 +705,8 @@ Func DoRestoreHiddenDialogs()
 		RegDelete("HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\DontShowMeThisDialogAgain", "{3AC815B9-2394-4E3C-92CA-E51BCBDEDE16}")
 		; Begin search info dialog box
 		RegDelete("HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\DontShowMeThisDialogAgain", "{2D6A1CA1-EE2B-4AD2-9FB8-60052F49C56B}")
+		; Reset preset button dialog box
+		RegDelete("HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\DontShowMeThisDialogAgain", "{E0E777CD-DA7B-40E0-9ECC-9ADD4F2BE0E9}")
 
 		If @error = 0 Then
 			MsgBox(BitOR($MB_OK, $MB_ICONINFORMATION), "Hidden messages restored", "All hidden messages have been restored.")
@@ -577,6 +735,12 @@ Func DoUpdateOptionsTabFromINIFile()
 		GUICtrlSetState($searchForBiomeChkbx, $GUI_UNCHECKED)
 	Else
 		GUICtrlSetState($searchForBiomeChkbx, $GUI_CHECKED)
+	EndIf
+
+	If $enableBiomeGroups = 0 Then
+		GUICtrlSetState($enableBiomeGroupsChkbx, $GUI_UNCHECKED)
+	Else
+		GUICtrlSetState($enableBiomeGroupsChkbx, $GUI_CHECKED)
 	EndIf
 
 	If $searchForStructures = 0 Then
@@ -665,6 +829,7 @@ Func DoResetINIFileToDefaults($prompt = True)
 		IniWrite($settingsINIFile, "Options", "SeedOffset", 0)
 		IniWrite($settingsINIFile, "Options", "SeedFileInfo", "")
 		IniWrite($settingsINIFile, "Options", "SearchForBiomes", 1)
+		IniWrite($settingsINIFile, "Options", "EnableBiomeGroups", 0)
 		IniWrite($settingsINIFile, "Options", "SaveSearchResultsToFile", 0)
 		IniWrite($settingsINIFile, "Options", "SearchForStructures", 0)
 		IniWrite($settingsINIFile, "Options", "IncludeRejectedSeeds", 0)

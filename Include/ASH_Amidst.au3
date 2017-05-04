@@ -1,12 +1,11 @@
 ; =============================================================================
-; Amidst Seed Hunter - Amidst Functions (AmidstFunctions.au3)
+; Amidst Seed Hunter - Amidst (ASH_Amidst.au3)
 ;
-; Author: 	Azuntik (seedhunter@azuntik.com)
-; Date:		2017.4.22
-; Download: https://github.com/azuntik/Amidst-Seed-Hunter/releases
+; Author: 	Azuntik
+; Date:		2017.5.2
 ; License:	CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
 ;
-; For use with Amidst v4.2 (https://github.com/toolbox4minecraft/amidst).
+; This file is part of the Amidst Seed Hunter project
 ; =============================================================================
 
 Func AmidstIsRunning()
