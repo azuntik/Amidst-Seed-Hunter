@@ -1,5 +1,7 @@
 # Amidst Seed Hunter
 
+**PLEASE NOTE: THIS PROJECT IS NO LONGER BEING MAINTAINED**
+
 Updated!
 
 Automates the hunt for seeds containing (or excluding) biomes and structures using [Amidst](https://github.com/toolbox4minecraft/amidst/releases).
